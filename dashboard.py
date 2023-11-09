@@ -75,15 +75,23 @@ app.layout = html.Div([
         value=['OK', 'CO', 'NM', 'KS']
     ),
     html.Div([
+        
+        dcc.Graph(id='strip-dot-chart', style={'width':'250px', 'height':'80vw'}),
         html.Div([
-            dcc.Graph(id='bar-chart'),
-            dcc.Graph(id='hierarchical-plot-treemap')
-        ],style={
-            'width':'50%',
+            html.Div([
+                dcc.Graph(id='bar-chart', style={'width':'500px'}),
+                dcc.Graph(id='hierarchical-plot-treemap', style={'width':'500px'})
+            ],style={
+            'width':'100%',
             'display':'flex',
-            'flex-direction':'column',
-        }), 
-    dcc.Graph(id='choropleth-map', style={'width':'50%', 'height':'80vh'}) 
+            'flex-direction':'row',
+            }), 
+            dcc.Graph(id='choropleth-map',style={'width':'1000px'})
+        ],style={
+        'display':'flex',
+        'flex-direction':'column',
+    })         
+
     ],style={
         'display':'flex',
         'flex-direction':'row',
@@ -93,7 +101,8 @@ app.layout = html.Div([
 @app.callback(
     [dash.dependencies.Output('choropleth-map', 'figure'),
      dash.dependencies.Output('bar-chart', 'figure'),
-     dash.dependencies.Output('hierarchical-plot-treemap', 'figure')],
+     dash.dependencies.Output('hierarchical-plot-treemap', 'figure'),
+     dash.dependencies.Output('strip-dot-chart', 'figure')],
     [dash.dependencies.Input('state-dropdown', 'value')]
 )
 
@@ -110,11 +119,12 @@ def update_plots(selected_states):
         locations='StateCode',
         locationmode='USA-states',
         color='TotalPopulation',
-        title='Statewise Population',
         scope='usa',
     )
     treemap_chart = px.sunburst(filtered_professional_df, path=['StateCode', 'Jobs'], values="TotalPeople")
-    return choropleth_map, bar_chart, treemap_chart
+    strip_chart = px.strip(df, y='IncomePerCap', hover_data=['State', 'County', 'IncomePerCap'], width=200)
+
+    return choropleth_map, bar_chart, treemap_chart, strip_chart
 
 if __name__ == '__main__':
     app.run_server(port=8080, debug=True)
