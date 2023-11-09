@@ -9,6 +9,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 app = dash.Dash()
+
 county_data = pd.read_csv('datasets/county_data.csv')
 state_code = pd.read_csv('datasets/state_codes.csv')
 df = pd.merge(county_data, state_code, right_on = 'State', left_on = 'State')
@@ -32,6 +33,7 @@ white_by_state.columns = ['StateCode', 'Population']
 
 __tmp1df = pd.merge(white_by_state, hispanic_by_state, right_on='StateCode', left_on='StateCode')
 __tmp1df.columns = ['StateCode', 'WhitePopulation', 'HispanicPopulation']
+
 __tmp2df = pd.merge(black_by_state, asian_by_state, right_on='StateCode', left_on='StateCode')
 __tmp2df.columns = ['StateCode', 'BlackPopulation', 'AsianPopulation']
 
@@ -45,11 +47,16 @@ df['OfficePop'] = (df['Office'] * df['TotalPop'] / 100).round().astype(np.int64)
 df['ConstructionPop'] = (df['Construction'] * df['TotalPop'] / 100).round().astype(np.int64)
 df['ProductionPop'] = (df['Production'] * df['TotalPop'] / 100).round().astype(np.int64)
 
-professional_df = df[['Abbreviation','ProfessionalPop','ServicePop','OfficePop','ConstructionPop','ProductionPop']].groupby('Abbreviation').sum().reset_index()
+professional_df = df[[
+    'Abbreviation',
+    'ProfessionalPop',
+    'ServicePop',
+    'OfficePop',
+    'ConstructionPop',
+    'ProductionPop']].groupby('Abbreviation').sum().reset_index()
 professional_df.rename(columns={'Abbreviation': 'StateCode'}, inplace=True)
 melted_df = pd.melt(professional_df, id_vars='StateCode', var_name='Jobs', value_name='TotalPeople')
 professional_melted_df = melted_df.sort_values('StateCode').reset_index().drop('index', axis=1, inplace=False)
-
 px.treemap(professional_melted_df, path=['StateCode', 'Jobs'], values="TotalPeople")
 professional_melted_df.to_csv('datasets/profession_count_by_state.csv', index=False)
 
